@@ -1,7 +1,7 @@
 import argparse
 from DS.describe import start
 from DS.histogram import hist_start
-from DS.plair_plot import plair_plot_start
+from DS.pair_plot import pair_plot_start
 from DS.scatter_plot import scatter_plot_start
 import sys
 
@@ -20,7 +20,7 @@ def main():
             case "Scatter":
                 scatter_plot_start(args.visualization[1])
             case "Pair":
-                plair_plot_start(args.visualization[1])
+                pair_plot_start(args.visualization[1])
 
 if __name__ == "__main__":
     main()
