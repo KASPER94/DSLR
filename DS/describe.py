@@ -1,6 +1,6 @@
-from load_csv import load
+from utils.load_csv import load
 import numpy as np
-from maths import _count, _mean, _std, _max, _min, _percentile
+from utils.maths import _count, _mean, _std, _max, _min, _percentile
 
 def start(file):
     datas = load(file)
