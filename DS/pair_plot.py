@@ -10,32 +10,40 @@ def plot_pair(df):
     courses1 = courses[:mid_index]
     courses2 = courses[mid_index:]
 
-    # sns.set(style="ticks")
+    house_colors = {
+        'Gryffindor': 'red',
+        'Hufflepuff': 'yellow',
+        'Ravenclaw': 'blue',
+        'Slytherin': 'green'
+    }
 
-    # Bloc 1
-    pair1 = sns.pairplot(df, vars=courses1, hue="Hogwarts House", palette="bright", diag_kind="hist")
+    palette = {
+        house: color for house, color in house_colors.items()
+        if house in df["Hogwarts House"].unique()
+    }
+
+    pair1 = sns.pairplot(df, vars=courses1, hue="Hogwarts House",
+                         palette=palette, diag_kind="hist", plot_kws={"alpha": 0.6, "s": 20})
     pair1.fig.suptitle("Pair Plot - Bloc 1", y=1.02)
     plt.tight_layout()
     plt.show()
-    # pair1.savefig("pair_plot_1.png")  # décommente pour sauvegarder
 
-    # Bloc 2
-    pair2 = sns.pairplot(df, vars=courses2, hue="Hogwarts House", palette="bright", diag_kind="hist")
+    pair2 = sns.pairplot(df, vars=courses2, hue="Hogwarts House",
+                         palette=palette, diag_kind="hist", plot_kws={"alpha": 0.6, "s": 20})
     pair2.fig.suptitle("Pair Plot - Bloc 2", y=1.02)
     plt.tight_layout()
     plt.show()
-    # pair2.savefig("pair_plot_2.png")  # décommente pour sauvegarder
 
 def pair_plot_start(filepath):
     raw_data = load(filepath)
     headers = raw_data[0]
     dataset = raw_data[1:]
 
-    # Créer un DataFrame propre
     df = pd.DataFrame(dataset, columns=headers)
 
-    # Convertir les colonnes numériques
     for col in df.columns[6:]:
         df[col] = pd.to_numeric(df[col], errors='coerce')
+
+    df = df.dropna(subset=["Hogwarts House"] + list(df.columns[6:]))
 
     plot_pair(df)
