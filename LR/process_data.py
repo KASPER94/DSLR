@@ -1,9 +1,11 @@
 import random
 import numpy as np
+import pandas as pd
+import os
 import itertools
 
 def split_train_test(X, y, test_ratio=0.2, seed=42):
-    np.random.seed(seed)
+    np.random.seed(seed * os.getpid())
     indices = np.random.permutation(len(X))
     test_size = int(len(X) * test_ratio)
     test_indices = indices[:test_size]
@@ -39,20 +41,16 @@ def score_feature_pair(df, feature_x, feature_y):
         centroid = subset.mean().values
         centroids[house] = centroid
 
-         # Calcul de la variance intra-maison (moyenne des distances au centroïde)
         distances = np.linalg.norm(subset.values - centroid, axis=1)
         intra_variances.append(np.mean(distances))
 
-    # Moyenne des variances intra-maison
     avg_intra_variance = np.mean(intra_variances)
 
-    # Somme des distances inter-centroïdes
     inter_class_distance = sum(
         np.linalg.norm(centroids[h1] - centroids[h2])
         for h1, h2 in itertools.combinations(houses, 2)
     )
 
-    # Score ajusté
     score = inter_class_distance / (1 + avg_intra_variance)
 
     return score
@@ -67,3 +65,19 @@ def rank_feature_pairs(df):
 
     ranked.sort(key=lambda x: x[1], reverse=True)
     return ranked
+
+def save_means(train_file, output_file="feature_means.json"):
+    df = pd.read_csv(train_file)
+
+    selected_features = ['Astronomy', 'Ancient Runes', 'Transfiguration',
+                         'Charms', 'Herbology', 'Defense Against the Dark Arts']
+
+    means = {}
+    for col in selected_features:
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+        means[col] = df[col].mean()
+
+    with open(output_file, "w") as f:
+        json.dump(means, f)
+
+    print(f"Feature means saved to {output_file}")

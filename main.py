@@ -5,6 +5,7 @@ from DS.pair_plot import pair_plot_start
 from DS.scatter_plot import scatter_plot_start
 from LR.logreg_train import train
 from LR.logreg_predict import predict
+from LR.check import checker
 import sys
 
 def main():
@@ -19,6 +20,7 @@ def main():
     )
     parser.add_argument('-t', '--train', nargs=1, type=str, help='Program to train model: --t dataset_file_train')
     parser.add_argument('-p', '--predict', nargs=1, type=str, help='Program to use model to predict houses: --p dataset_file_test')
+    parser.add_argument('-test', '--test', nargs=2, type=str, help='Program to use model to predict houses: --p dataset_file_test')
     args = parser.parse_args()
 
     if (args.describe):
@@ -38,6 +40,8 @@ def main():
         train(args.train[0])
     elif (args.predict):
         predict(args.predict)
+    elif (args.test):
+        checker(args.test[0], args.test[1])
 
 if __name__ == "__main__":
     main()
