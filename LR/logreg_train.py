@@ -39,7 +39,7 @@ class Train:
         self.df = df
         self.classes = np.unique(y)
 
-    def prepare_with_top_features(self, file, top_n=4):
+    def prepare_with_top_features(self, file, eval_mode, top_n=4):
         raw = load(file)
         headers = raw[0]
         dataset = raw[1:]
@@ -74,8 +74,12 @@ class Train:
         X = (X - np.mean(X, axis=0)) / np.std(X, axis=0)
         y = df["Hogwarts House"].values
         self.classes = np.unique(y)
-
-        self.X_train, self.X_test, self.y_train, self.y_test = split_train_test(X, y)
+        if (eval_mode):
+            self.X_train, self.X_test, self.y_train, self.y_test = split_train_test(X, y)
+        else:
+            self.X_train = X
+            self.y_train = y
+            self.df = df
 
     @staticmethod
     def sigmoid(z):
@@ -128,15 +132,16 @@ class Train:
         df.to_csv(filename, index=False)
 
 
-def train(file):
+def train(file, eval_mode=False):
     model = Train()
     # model.load_and_prepare_data(file)
-    model.prepare_with_top_features(file, top_n=6)
+    model.prepare_with_top_features(file, eval_mode, top_n=6)
     # rank = rank_feature_pairs(model.df)
     # model.f1, model.f2 = rank[0][0]
     # print(f"{rank}")
     thetas = model.train_one_vs_ALL(model.X_train, model.y_train, model.classes, alpha=0.1, ite=1000)
     # thetas = model.train_one_vs_ALL(model.X, model.y, model.classes, alpha=0.1, ite=1000)
     model.save_weights(thetas, "weights.csv")
-    evaluate(model, thetas)
+    if (eval_mode):
+        evaluate(model, thetas)
 

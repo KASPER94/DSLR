@@ -18,8 +18,10 @@ def main():
         type=str,
         help='--v [Histogram | Pair | Scatter] dataset_file [optional: feature_x feature_y]'
     )
-    parser.add_argument('-t', '--train', nargs=1, type=str, help='Program to train model: --t dataset_file_train')
+    parser.add_argument('-t', '--train', nargs='+', type=str, help='--t dataset_file_train [--eval full|split|none]')
+    # parser.add_argument('-t', '--train', nargs=1, type=str, help='Program to train model: --t dataset_file_train')
     parser.add_argument('-p', '--predict', nargs=1, type=str, help='Program to use model to predict houses: --p dataset_file_test')
+    parser.add_argument('--eval', action='store_true' , help='Evaluation mode: split, full or none')
     parser.add_argument('-test', '--test', nargs=2, type=str, help='Program to use model to predict houses: --p dataset_file_test')
     args = parser.parse_args()
 
@@ -37,7 +39,10 @@ def main():
             case "Pair":
                     pair_plot_start(args.visualization[1])
     elif (args.train):
-        train(args.train[0])
+        eval_mode = False
+        if (args.eval):
+            eval_mode = True
+        train(args.train[0], eval_mode)
     elif (args.predict):
         predict(args.predict)
     elif (args.test):
