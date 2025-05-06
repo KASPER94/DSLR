@@ -6,39 +6,50 @@ def start(file):
     datas = load(file)
     features = datas[0]
     dataset = datas[1:, :]
-    print(f'{"":15} |{features[6]:>12} |{features[7]:>12} |{features[8]:>12} | {features[9]:>12} |')
-    count = []
-    mean = []
-    Std = []
-    Min = []
-    Max = []
-    twentyFive = []
-    fifty = []
-    sevFiv = []
-    for col in range(6, 10):
-        all_col_data = np.array([])
-        
-        for i in range(0, len(dataset)):
-            try:
-                value = float(dataset[i, col])
-                if not np.isnan(value):
-                    all_col_data = np.append(all_col_data, value)
-            except:
-                pass 
-        
-        count.append(_count(all_col_data))
-        mean.append(_mean(all_col_data))
-        Std.append(_std(all_col_data))
-        Min.append(_min(all_col_data))
-        Max.append(_max(all_col_data))
-        twentyFive.append(_percentile(all_col_data, 25))
-        fifty.append(_percentile(all_col_data, 50))
-        sevFiv.append(_percentile(all_col_data, 75))
-    print(f'{"Count":15} | {count[0]:>12.2f}| {count[1]:>12.2f}| {count[2]:>12.2f}| {count[3]:>12.2f}                  |')
-    print(f'{"Mean":15} | {mean[0]:>12.2f}| {mean[1]:>12.2f}| {mean[2]:>12.2f}| {mean[3]:>12.2f}                  |')
-    print(f'{"Std":15} | {Std[0]:>12.2f}| {Std[1]:>12.2f}| {Std[2]:>12.2f}| {Std[3]:>12.2f}                  |')
-    print(f'{"Min":15} | {Min[0]:>12.2f}| {Min[1]:>12.2f}| {Min[2]:>12.2f}| {Min[3]:>12.2f}                  |')
-    print(f'{"25%":15} | {twentyFive[0]:>12.2f}| {twentyFive[1]:>12.2f}| {twentyFive[2]:>12.2f}| {twentyFive[3]:>12.2f}                  |')
-    print(f'{"50%":15} | {fifty[0]:>12.2f}| {fifty[1]:>12.2f}| {fifty[2]:>12.2f}| {fifty[3]:>12.2f}                  |')
-    print(f'{"75%":15} | {sevFiv[0]:>12.2f}| {sevFiv[1]:>12.2f}| {sevFiv[2]:>12.2f}| {sevFiv[3]:>12.2f}                  |')
-    print(f'{"Max":15} | {Max[0]:>12.2f}| {Max[1]:>12.2f}| {Max[2]:>12.2f}| {Max[3]:>12.2f}                  |')
+
+    numeric_cols = range(6, len(features))
+    stat_names = ["Count", "Mean", "Std", "Min", "25%", "50%", "75%", "Max", "Range"]
+
+    stats = {name: [] for name in stat_names}
+
+    for col in numeric_cols:
+        col_data = np.array([
+            float(dataset[i, col])
+            for i in range(len(dataset))
+            if isinstance(dataset[i, col], float) and not np.isnan(dataset[i, col])
+        ])
+
+        stats["Count"].append(_count(col_data))
+        stats["Mean"].append(_mean(col_data))
+        stats["Std"].append(_std(col_data))
+        stats["Min"].append(_min(col_data))
+        stats["25%"].append(_percentile(col_data, 25))
+        stats["50%"].append(_percentile(col_data, 50))
+        stats["75%"].append(_percentile(col_data, 75))
+        stats["Max"].append(_max(col_data))
+        stats["Range"].append(_max(col_data) - _min(col_data))
+
+    col_width = 22
+    max_name_len = col_width - 4
+
+    def format_header(name):
+        return (name[:max_name_len] + '...') if len(name) > max_name_len else name.ljust(col_width)
+
+    headers = [format_header(features[col]) for col in numeric_cols]
+
+    print(f'{"Stat":15} ' + ''.join([f'| {h} ' for h in headers[:4]]) + '|')
+    print('-' * (17 + len(headers[:4]) * (col_width + 3)))
+
+    for stat in stat_names:
+        row = ''.join([f'| {v:>{col_width }.2f} ' for v in stats[stat][:4]])
+        print(f'{stat:15} {row}|')
+
+    output_file = "describe_output.txt"
+    with open(output_file, mode='w') as f:
+        f.write(f'{"Stat":15} ' + ''.join([f'| {h} ' for h in headers]) + '|\n')
+        f.write('-' * (17 + len(headers) * (col_width + 3)) + '\n')
+        for stat in stat_names:
+            row = ''.join([f'| {v:>{col_width}.2f} ' for v in stats[stat]])
+            f.write(f'{stat:15} {row}|\n')
+
+    print(f"\nStatistiques enregistrées dans `{output_file}`.")

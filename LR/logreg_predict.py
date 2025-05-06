@@ -18,12 +18,12 @@ class Predict:
             df[col] = pd.to_numeric(df[col], errors='coerce')
             df[col] = df[col].fillna(feature_means[col])
         X = df[selected_features].values
-        X = (X - np.mean(X, axis=0)) / np.std(X, axis=0)  # normalisation z-score
-        X = np.insert(X, 0, 1, axis=1)  # ajout du biais
+        X = (X - np.mean(X, axis=0)) / np.std(X, axis=0) 
+        X = np.insert(X, 0, 1, axis=1)  
         return df.index.values, X
 
     def predict(self, X):
-        probs = self.sigmoid(np.dot(X, self.thetas.T))  # shape (n, num_classes)
+        probs = self.sigmoid(np.dot(X, self.thetas.T))
         preds = np.argmax(probs, axis=1)
         return [self.classes[i] for i in preds]
 
@@ -32,11 +32,9 @@ def predict(args):
     test_file = args[0]
     df = pd.read_csv(test_file)
 
-    # mêmes features que dans train()
     selected_features = ['Astronomy', 'Ancient Runes', 'Transfiguration',
                          'Charms', 'Herbology', 'Defense Against the Dark Arts']
 
-    # calcul des moyennes globales sur les colonnes (pas de maison connue dans test)
     feature_means = {}
     for col in selected_features:
         df[col] = pd.to_numeric(df[col], errors='coerce')

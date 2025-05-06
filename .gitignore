@@ -3,3 +3,4 @@ __pycache__
 .env
 houses.csv
 weights.csv
+describe_output.txt
