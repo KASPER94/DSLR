@@ -39,7 +39,7 @@ class Train:
         self.df = df
         self.classes = np.unique(y)
 
-    def prepare_with_best_features(self, file):
+    def prepare_with_top_features(self, file, top_n=4):
         raw = load(file)
         headers = raw[0]
         dataset = raw[1:]
@@ -47,20 +47,34 @@ class Train:
         df = pd.DataFrame(dataset, columns=headers)
         for col in df.columns[6:]:
             df[col] = pd.to_numeric(df[col], errors='coerce')
-
+            for house in df["Hogwarts House"].unique():
+                house_mask = df["Hogwarts House"] == house
+                mean_value = df.loc[house_mask, col].mean()
+                df.loc[house_mask & df[col].isna(), col] = mean_value
         df = df.dropna(subset=["Hogwarts House"] + list(df.columns[6:]))
+
         self.df = df
-
         ranked = rank_feature_pairs(df)
-        (self.f1, self.f2), score = ranked[0]
-        # print(f" Selected features: {self.f1} & {self.f2} (score = {score:.2f})")
+        
+        features = []
+        for (f1, f2), _ in ranked:
+            if f1 not in features:
+                features.append(f1)
+            if f2 not in features:
+                features.append(f2)
+            if len(features) >= top_n:
+                break
 
-        df = df[["Hogwarts House", self.f1, self.f2]]
-        self.X = df[[self.f1, self.f2]].values
-        self.y = df["Hogwarts House"].values
-        self.classes = np.unique(self.y)
+        # features = ['Defense Against the Dark Arts', 'Charms', 'Herbology', 'Divination', 'Muggle Studies' ]
+        features = ['Astronomy', 'Ancient Runes', 'Transfiguration', 'Charms', 'Herbology', 'Defense Against the Dark Arts' ]
+        print(f" Using top {top_n} features: {features}")
 
-        self.X_train, self.X_test, self.y_train, self.y_test = split_train_test(self.X, self.y)
+        df = df[["Hogwarts House"] + features]
+        X = df[features].values
+        y = df["Hogwarts House"].values
+        self.classes = np.unique(y)
+
+        self.X_train, self.X_test, self.y_train, self.y_test = split_train_test(X, y)
 
     @staticmethod
     def sigmoid(z):
@@ -116,9 +130,9 @@ class Train:
 def train(file):
     model = Train()
     # model.load_and_prepare_data(file)
-    model.prepare_with_best_features(file)
-    rank = rank_feature_pairs(model.df)
-    model.f1, model.f2 = rank[0][0]
+    model.prepare_with_top_features(file, top_n=6)
+    # rank = rank_feature_pairs(model.df)
+    # model.f1, model.f2 = rank[0][0]
     # print(f"{rank}")
     thetas = model.train_one_vs_ALL(model.X_train, model.y_train, model.classes, alpha=0.1, ite=1000)
     # thetas = model.train_one_vs_ALL(model.X, model.y, model.classes, alpha=0.1, ite=1000)
