@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from utils.load_csv import load
 
-def scatter_plot_start(filepath):
+def scatter_plot_start(filepath, x_feature=None, y_feature=None):
     raw_data = load(filepath)
     headers = raw_data[0]
     dataset = raw_data[1:]
@@ -11,9 +11,9 @@ def scatter_plot_start(filepath):
 
     for col in df.columns[6:]:
         df[col] = pd.to_numeric(df[col], errors='coerce')
-
-    x_feature = "Astronomy"
-    y_feature = "Defense Against the Dark Arts"
+    if (x_feature == None and y_feature == None):
+        x_feature = "Astronomy"
+        y_feature = "Ancient Runes"
 
     df = df.dropna(subset=["Hogwarts House", x_feature, y_feature])
 
